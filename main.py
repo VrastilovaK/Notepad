@@ -16,17 +16,6 @@ class Footer(customtkinter.CTkFrame):
 
         self.label = customtkinter.CTkLabel(self, text="Notepad by Tewe")
         self.label.grid(row=0, column=0, padx=(20, 480))
-<<<<<<< HEAD
-=======
-
-        # self.time_string = time.strftime("%a, %d %b %Y %H:%M:%S")
-        # self.label_time = customtkinter.CTkLabel(self, text=f"{self.time_string}")
-        # self.label_time.grid(row=0, column=1, padx=20)
-
-        # self.time_string = 0
-        # self.label_time = customtkinter.CTkLabel(self, text=f"{self.time_string}")
-        # self.label_time.grid(row=0, column=1, padx=20)
->>>>>>> main
 
 
 class App(customtkinter.CTk):
