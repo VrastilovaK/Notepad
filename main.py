@@ -14,19 +14,32 @@ def time_setting():
 class NewNote(customtkinter.CTkToplevel):
     def __init__(self, master):
         super().__init__(master)
-        self.geometry("400x280+250+250")
+        self.geometry("400x340+250+250")
         self.title("New note")
         self.resizable(False, False)
 
+        self.title_label = customtkinter.CTkLabel(self, text="Title: ")
+        self.title_label.grid(row=0, column=0, pady=10)
+
+        self.title = customtkinter.CTkEntry(self)
+        self.title.grid(row=0, column=1, pady=10)
+
+        self.content_label = customtkinter.CTkLabel(self, text="Content: ")
+        self.content_label.grid(row=1, column=0, columnspan=2, pady=(0, 10))
+
         self.textbox = customtkinter.CTkTextbox(self)
         self.textbox.configure(width=380)
-        self.textbox.grid(padx=10, pady=10)
+        self.textbox.grid(row=2, column=0, columnspan=2, pady=(0, 10), padx=10)
 
-        self.save_button = customtkinter.CTkButton(self, text="Save", command=self.save_note)
-        self.save_button.grid(pady=10)
+        self.save_button = customtkinter.CTkButton(self, text="Save")   # , command=self.save_note)
+        self.save_button.grid(row=3, column=0, columnspan=2, pady=(0, 10))
 
-    def save_note(self):
-        print("save")
+    # def save_note(self):
+    #     with open("", "w") as my_file:
+    #         text = self.textbox.get("0.0", "end")
+    #         my_file.write(text)
+    #     # app.main_frame.open_notes()
+    #     self.destroy()
 
 
 # menu with buttons
@@ -36,10 +49,21 @@ class Menu(customtkinter.CTkFrame):
         self.master_width = width
         self.configure(width=self.master_width, height=50)
 
-        self.new_note_button = customtkinter.CTkButton(self, text="New", command=self.new_note)
+        self.new_note_button = customtkinter.CTkButton(self, text="New note", command=self.new_note)
         self.new_note_button.grid(row=0, column=0)
 
         self.new_note_window = None
+
+        self.edit_note_button = customtkinter.CTkButton(self, text="Edit note")
+        self.edit_note_button.grid(row=0, column=1, padx=(5, 0))
+
+        self.edit_note_window = None
+
+        self.delete_button = customtkinter.CTkButton(self, text="Delete note")
+        self.delete_button.grid(row=0, column=2, padx=5)
+
+        self.delete_all_button = customtkinter.CTkButton(self, text="Delete all")
+        self.delete_all_button.grid(row=0, column=3)
 
     def new_note(self):
         if self.new_note_window is None or not self.new_note_window.winfo_exists():
@@ -48,20 +72,22 @@ class Menu(customtkinter.CTkFrame):
         else:
             self.new_note_window.focus()
 
+    def edit_note(self):
+        pass
+
 
 # frame for saved notes
-class MainFrame(customtkinter.CTkScrollableFrame):
+class NoteView(customtkinter.CTkTabview):
     def __init__(self, master, width):
         super().__init__(master, width)
         self.master_width = width
-        self.configure(width=self.master_width - 35, height=470)
+        self.configure(width=self.master_width - 10, height=400)
 
-        # notes
-        self.textbox = customtkinter.CTkLabel(self, text="test")
-        self.textbox.grid(row=0)
+        self.add("note1")
+        self.add("note2")
 
-        self.textbox_2 = customtkinter.CTkLabel(self, text="test2")
-        self.textbox_2.grid(row=1)
+        self.label = customtkinter.CTkLabel(master=self.tab("note1"), text="Test")
+        self.label.grid(row=0, column=0, padx=20, pady=10)
 
 
 # footer with date and time
@@ -81,7 +107,7 @@ class App(customtkinter.CTk):
         super().__init__()
         self.title("Notepad")
         self.width = 800
-        self.height = 600
+        self.height = 515
         self.geometry(f"{self.width}x{self.height}+100+100")
         self.resizable(False, False)
         self.timing = time
@@ -89,11 +115,11 @@ class App(customtkinter.CTk):
         self.menu = Menu(master=self, width=self.width)
         self.menu.grid(row=0, column=0, pady=15, padx=5)
 
-        self.main_frame = MainFrame(master=self, width=self.width)
-        self.main_frame.grid(row=1, column=0, padx=5)
+        self.note_view = NoteView(master=self, width=self.width)
+        self.note_view.grid(row=1, column=0, columnspan=15, padx=5)
 
         self.footer = Footer(master=self, width=self.width)
-        self.footer.grid(row=2, column=0, padx=5, pady=15)
+        self.footer.place(y=self.height-40, x=400)
 
 
 # mainloop
