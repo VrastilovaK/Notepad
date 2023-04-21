@@ -1,45 +1,7 @@
 # coding = UTF8
 import tkinter
 import customtkinter
-import time
 import json
-
-
-# function for timing
-def time_setting():
-    string = time.strftime('%a, %d %b %Y %H:%M:%S')
-    label_time.configure(text=string)
-    label_time.after(1000, time_setting)
-
-
-# save notes
-def save_note(title, text):
-    title_save = title.get()
-    content = text.get("0.0", tkinter.END)
-    notes[title_save] = content.strip()
-
-    with open("notes.json", "w") as file:
-        json.dump(notes, file)
-
-    load_notes()
-
-
-def load_notes():
-    try:
-        with open("notes.json", "r") as file:
-            notes = json.load(file)
-
-        for title, content in notes.items():
-            try:
-                app.note_view.add(f"{title}")
-                app.note_view.label = customtkinter.CTkLabel(master=app.note_view.tab(f"{title}"), text=content)
-                app.note_view.label.grid(row=0, column=0, padx=20, pady=10)
-
-            except ValueError:
-                pass
-
-    except FileNotFoundError:
-        pass
 
 
 # new note
@@ -63,11 +25,18 @@ class NewNote(customtkinter.CTkToplevel):
         self.textbox.configure(width=380)
         self.textbox.grid(row=2, column=0, columnspan=2, pady=(0, 10), padx=10)
 
-        self.save_button = customtkinter.CTkButton(self, text="Save", command=self.save)
+        self.save_button = customtkinter.CTkButton(self, text="Save", command=self.save_note)
         self.save_button.grid(row=3, column=0, columnspan=2, pady=(0, 10))
 
-    def save(self):
-        save_note(self.title, self.textbox)
+    def save_note(self):
+        title_save = self.title.get()
+        content = self.textbox.get("0.0", tkinter.END)
+        notes[title_save] = content.strip()
+
+        with open("notes.json", "w") as f:
+            json.dump(notes, f)
+
+        app.load_notes()
         self.destroy()
 
 
@@ -83,15 +52,15 @@ class Menu(customtkinter.CTkFrame):
 
         self.new_note_window = None
 
-        self.edit_note_button = customtkinter.CTkButton(self, text="Edit note")
-        self.edit_note_button.grid(row=0, column=1, padx=(5, 0))
+        self.edit_note_button = customtkinter.CTkButton(self, text="Edit note", command=self.edit_note)
+        self.edit_note_button.grid(row=0, column=1, padx=(10, 0))
 
         self.edit_note_window = None
 
-        self.delete_button = customtkinter.CTkButton(self, text="Delete note")
-        self.delete_button.grid(row=0, column=2, padx=5)
+        self.delete_button = customtkinter.CTkButton(self, text="Delete note", command=self.delete_note)
+        self.delete_button.grid(row=0, column=2, padx=10)
 
-        self.delete_all_button = customtkinter.CTkButton(self, text="Delete all")
+        self.delete_all_button = customtkinter.CTkButton(self, text="Delete all", command=self.delete_all)
         self.delete_all_button.grid(row=0, column=3)
 
     def new_note(self):
@@ -103,6 +72,15 @@ class Menu(customtkinter.CTkFrame):
 
     def edit_note(self):
         pass
+
+    def delete_note(self):
+        pass
+
+    def delete_all(self):
+        notes.clear()
+        with open("notes.json", "w") as f:
+            json.dump(notes, f)
+        app.load_notes()
 
 
 # frame for saved notes
@@ -126,14 +104,13 @@ class Footer(customtkinter.CTkFrame):
 
 # app
 class App(customtkinter.CTk):
-    def __init__(self):
+    def __init__(self, ):
         super().__init__()
         self.title("Notepad")
-        self.width = 800
+        self.width = 600
         self.height = 515
         self.geometry(f"{self.width}x{self.height}+100+100")
         self.resizable(False, False)
-        self.timing = time
 
         self.menu = Menu(master=self, width=self.width)
         self.menu.grid(row=0, column=0, pady=15, padx=5)
@@ -142,16 +119,33 @@ class App(customtkinter.CTk):
         self.note_view.grid(row=1, column=0, columnspan=15, padx=5)
 
         self.footer = Footer(master=self, width=self.width)
-        self.footer.place(y=self.height - 40, x=400)
+        self.footer.place(y=self.height - 40, x=200)
+
+    def load_notes(self):
+        try:
+            with open("notes.json", "r") as f:
+                load_notes = json.load(f)
+
+            self.note_view.destroy()
+            self.note_view = NoteView(master=self, width=self.width)
+            self.note_view.grid(row=1, column=0, columnspan=15, padx=5)
+
+            for title, content in load_notes.items():
+                try:
+                    self.note_view.add(f"{title}")
+                    self.note_view.label = customtkinter.CTkLabel(master=self.note_view.tab(f"{title}"), text=content)
+                    self.note_view.label.grid(row=0, column=0, padx=20, pady=10)
+
+                except ValueError:
+                    self.note_view.label = customtkinter.CTkLabel(master=self.note_view.tab(f"{title}"), text=content)
+                    self.note_view.label.grid(row=0, column=0, padx=20, pady=10)
+
+        except FileNotFoundError:
+            pass
 
 
 # mainloop
 notes = {}
-app = App()
-
-label_time = customtkinter.CTkLabel(app.footer)
-label_time.grid(row=0, column=1, padx=(0, 15))
-time_setting()
 
 try:
     with open("notes.json", "r") as file:
@@ -160,5 +154,7 @@ try:
 except FileNotFoundError:
     pass
 
-load_notes()
+app = App()
+app.load_notes()
+
 app.mainloop()
