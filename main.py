@@ -40,7 +40,8 @@ class Menu(customtkinter.CTkFrame):
         else:
             self.edit_note_window.focus()
 
-    def delete_note(self):
+    @staticmethod
+    def delete_note():
         note = app.note_view.get()
         app.note_view.delete(note)
         notes.pop(note)
@@ -48,7 +49,8 @@ class Menu(customtkinter.CTkFrame):
             json.dump(notes, f)
         app.load_notes()
 
-    def delete_all(self):
+    @staticmethod
+    def delete_all():
         notes.clear()
         with open("notes.json", "w") as f:
             json.dump(notes, f)
